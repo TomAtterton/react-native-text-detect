@@ -1,22 +1,8 @@
-# react-native-text-detect
+# react-native-text-detect ( WIP )
 
 A package that can take a part of an image and convert to text
 
-## Installation
 
-```sh
-npm install react-native-text-detect
-```
-
-## Usage
-
-```js
-import { multiply } from 'react-native-text-detect';
-
-// ...
-
-const result = await multiply(3, 7);
-```
 
 ## Contributing
 
