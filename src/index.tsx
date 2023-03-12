@@ -8,23 +8,20 @@ import { useAnimatedRef } from 'react-native-reanimated';
 import { HORIZONTAL_PADDING, VERTICAL_PADDING } from './utils';
 
 interface Props {
-  handleColor: string;
-  handleBorderColor: string;
-  overlayColor: string;
-  overlayStrokeWidth: number;
-  overlayOpacity: number;
-  overlayStrokeColor: string;
-  loadingIndicatorColor: string;
-  updateImage: () => void;
+  handleColor?: string;
+  handleBorderColor?: string;
+  overlayColor?: string;
+  overlayStrokeWidth?: number;
+  overlayOpacity?: number;
+  overlayStrokeColor?: string;
   imageUri?: string;
-
-  defaultFrameCoordinates: {
+  defaultFrameCoordinates?: {
     left: number;
     right: number;
     bottom: number;
     top: number;
   };
-  onCrop: (image: string) => void;
+  onGenerateText: (text: string) => void;
 }
 
 const ScreenWidth = Dimensions.get('window').width;
@@ -39,7 +36,7 @@ const ImageToTextView = forwardRef(
       overlayOpacity = 0.5,
       overlayStrokeColor = 'blue',
       imageUri,
-      onCrop,
+      onGenerateText,
     }: Props,
     ref
   ) => {
@@ -50,7 +47,6 @@ const ImageToTextView = forwardRef(
     const [imageWidth, setImageWidth] = useState(0);
 
     useEffect(() => {
-      // TODO only accept uri
       imageUri &&
         Image.getSize(imageUri, (width, height) => {
           setImageHeight(height);
@@ -72,8 +68,6 @@ const ImageToTextView = forwardRef(
       return Math.min(ScreenWidth / imageWidth, viewHeight / imageHeight);
     }, [imageHeight, imageWidth, viewHeight]);
 
-    console.log('useEffect', imageHeight * ratio);
-
     useEffect(() => {
       if (imageHeight && imageWidth && ratio) {
         setFrameCoords({
@@ -89,7 +83,6 @@ const ImageToTextView = forwardRef(
       <View style={styles.container}>
         <View
           style={styles.contentContainer}
-          // TODO: maybe we can do without this if you pass the height
           onLayout={(e) => {
             const height = e?.nativeEvent?.layout?.height || 0;
             const width = e?.nativeEvent?.layout?.width || 0;
@@ -112,7 +105,7 @@ const ImageToTextView = forwardRef(
             <AnimatedSelector
               ref={ref}
               imageUri={imageUri}
-              onCrop={onCrop}
+              onGenerateText={onGenerateText}
               handleColor={handleColor}
               handleBorderColor={handleBorderColor}
               defaultFrameCoordinates={frameCoords}

@@ -1,6 +1,6 @@
 import React, { forwardRef, memo, useImperativeHandle, useMemo } from 'react';
 import { View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { GestureDetector } from 'react-native-gesture-handler';
 import Svg, { Polygon } from 'react-native-svg';
 import styles from './style';
 import Corner from './Corner';
@@ -8,7 +8,8 @@ import Animated, {
   useAnimatedProps,
   useSharedValue,
 } from 'react-native-reanimated';
-import { cropImage, HORIZONTAL_PADDING } from './utils';
+import { detectTextFromImage } from './utils';
+import dragAnimation from './helpers/dragAnimation';
 
 const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
 
@@ -29,7 +30,7 @@ interface Props {
   handleColor: string;
   handleBorderColor: string;
   imageUri: string | undefined;
-  onCrop: (text: string) => void;
+  onGenerateText: (text: string) => void;
 }
 
 const AnimatedSelector = forwardRef(
@@ -46,7 +47,7 @@ const AnimatedSelector = forwardRef(
       overlayStrokeColor,
       overlayStrokeWidth,
       imageUri,
-      onCrop,
+      onGenerateText,
     }: Props,
     ref
   ) => {
@@ -67,55 +68,33 @@ const AnimatedSelector = forwardRef(
 
     const panGesture = useMemo(
       () =>
-        Gesture.Pan()
-          .onUpdate((e) => {
-            // update corner x and y position based gesture
-            const { translationX, translationY } = e;
-            if (
-              topRightX.value + translationX < imageWidth &&
-              topLeftX.value + translationX > 0 &&
-              bottomRightX.value + translationX < imageWidth &&
-              bottomLeftX.value + translationX > 0
-            ) {
-              offsetX.value = translationX;
-            }
-            if (
-              bottomRightY.value + translationY < imageHeight &&
-              topRightY.value + translationY > 0 &&
-              bottomLeftY.value + translationY < imageHeight &&
-              topLeftY.value + translationY > 0
-            ) {
-              offsetY.value = translationY;
-            }
-          })
-          .onEnd(() => {
-            // Update corner x and y position based on offset
-            topLeftX.value += offsetX.value;
-            topRightX.value += offsetX.value;
-            topLeftY.value += offsetY.value;
-            topRightY.value += offsetY.value;
-            bottomRightX.value += offsetX.value;
-            bottomRightY.value += offsetY.value;
-            bottomLeftX.value += offsetX.value;
-            bottomLeftY.value += offsetY.value;
-
-            // Reset offset
-            offsetX.value = 0;
-            offsetY.value = 0;
-          }),
+        dragAnimation({
+          topRightX,
+          topRightY,
+          bottomRightX,
+          bottomRightY,
+          bottomLeftX,
+          bottomLeftY,
+          topLeftX,
+          topLeftY,
+          offsetX,
+          offsetY,
+          imageHeight,
+          imageWidth,
+        }),
       [
-        bottomLeftX,
-        bottomLeftY,
-        bottomRightX,
-        bottomRightY,
-        imageHeight,
-        imageWidth,
-        offsetX,
-        offsetY,
-        topLeftX,
-        topLeftY,
         topRightX,
         topRightY,
+        bottomRightX,
+        bottomRightY,
+        bottomLeftX,
+        bottomLeftY,
+        topLeftX,
+        topLeftY,
+        offsetX,
+        offsetY,
+        imageHeight,
+        imageWidth,
       ]
     );
 
@@ -142,8 +121,8 @@ const AnimatedSelector = forwardRef(
       ref,
       () => {
         return {
-          async focus() {
-            const text = await cropImage({
+          async detectText() {
+            const text = await detectTextFromImage({
               topLeft: {
                 x: topLeftX.value,
                 y: topLeftY.value,
@@ -165,7 +144,7 @@ const AnimatedSelector = forwardRef(
               imageUri: imageUri,
             });
 
-            onCrop(text);
+            onGenerateText(text);
           },
         };
       },
@@ -175,7 +154,7 @@ const AnimatedSelector = forwardRef(
         bottomRightX.value,
         bottomRightY.value,
         imageUri,
-        onCrop,
+        onGenerateText,
         topLeftX.value,
         topLeftY.value,
         topRightX.value,

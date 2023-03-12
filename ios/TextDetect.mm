@@ -7,7 +7,7 @@
 RCT_EXPORT_MODULE()
 
 
-RCT_EXPORT_METHOD(crop:(NSDictionary *)points
+RCT_EXPORT_METHOD(detectText:(NSDictionary *)points
                   imageUri:(NSString *)imageUri
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
@@ -80,6 +80,7 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)points
     VNImageRequestHandler *handler = [[VNImageRequestHandler alloc] initWithCGImage:maskedImage.CGImage options:@{}];
         VNRecognizeTextRequest *request = [[VNRecognizeTextRequest alloc] initWithCompletionHandler:^(VNRequest * _Nonnull request, NSError * _Nullable error) {
             if (error) {
+                reject(@"event_failure", @"Something went wrong", error);
                 NSLog(@"Error recognizing text: %@", error.localizedDescription);
             } else {
                 NSArray *results = request.results;
@@ -93,15 +94,12 @@ RCT_EXPORT_METHOD(crop:(NSDictionary *)points
                         }
                     resolve(@{@"text":recognizedText});
                 } else {
-                    // TODO handle rejection
-                    NSLog(@"No text found in image");
+                    reject(@"event_failure", @"No text found in image", nil);
                 }
             }
         }];
         request.recognitionLevel = VNRequestTextRecognitionLevelAccurate;
         [handler performRequests:@[request] error:nil];
-
-
 }
 
 

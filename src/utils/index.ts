@@ -26,7 +26,7 @@ const TextDetect = TextDetectModule
       }
     );
 
-export const cropImage = async ({
+export const detectTextFromImage = async ({
   topLeft,
   topRight,
   bottomLeft,
@@ -52,8 +52,7 @@ export const cropImage = async ({
     width: imageWidth,
   };
   try {
-    const value = await TextDetect.crop(coordinates, imageUri);
-    console.log('Cropped image successfully', value);
+    const value = await TextDetect.detectText(coordinates, imageUri);
     return value?.text ?? '';
   } catch (e) {
     Alert.alert('Error translating image', e?.message);

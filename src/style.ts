@@ -1,10 +1,7 @@
-import { Dimensions, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 const HANDLE_SIZE = 20;
 const HANDLE_OFFSET = HANDLE_SIZE * 3;
-
-const width = Dimensions.get('window').width;
-const height = Dimensions.get('window').height;
 
 export default StyleSheet.create({
   container: {
